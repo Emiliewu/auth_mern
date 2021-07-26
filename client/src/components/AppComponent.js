@@ -3,6 +3,13 @@ import axios from 'axios'
 
 const AppComponent = () =>{
 
+    function getCookie(key) {
+        var b = document.cookie.match("(^|;)\\s*" + key + "\\s*=\\s*([^;]+)");
+        return b ? b.pop() : "";
+    }
+    console.log("COOKIE TEST")
+    console.log(getCookie("test"))
+
     const [errorState, setErrorState] = useState({})
     const [loginState, setLoginState] = useState({
         email:"",
@@ -34,13 +41,14 @@ const AppComponent = () =>{
         axios.post("http://localhost:8000/api/user", registerState, {withCredentials:true})
             .then(res => console.log(res))
             .catch(err => {
+                console.log(err.response.data)
                 const {errors} = err.response.data;
                 console.log(errors)
                 const errObj = {}
 
-                for(const key of Object.keys(errors)){
+                for(const [key, value] of Object.keys(errors)){
                     console.log(errors[key])
-                    errObj[key] = true;
+                    errObj[key] = value;
                 }
                 setErrorState(errObj)
             })
@@ -55,6 +63,12 @@ const AppComponent = () =>{
 
     const getAllUsers = () =>{
         axios.get("http://localhost:8000/api/users", {withCredentials:true})
+            .then(res => console.log(res))
+            .catch(err => console.log(err))
+    }
+
+    const logOut = () => {
+        axios.get("http://localhost:8000/api/logout",{withCredentials:true})
             .then(res => console.log(res))
             .catch(err => console.log(err))
     }
@@ -92,6 +106,7 @@ const AppComponent = () =>{
                         Email:
                         <input name="email" type="text" onChange={registerChangeHandler} />
                         {(errorState.email)? <small className="ml-1 text-danger font-weight-bold">WRONG</small>:null}
+                        {(errorState.duplicate)? <small className="ml-1 text-danger font-weight-bold">EMAIL EXISTS</small>:null}
                     </p>
                     <p>
                         Password:
@@ -107,6 +122,7 @@ const AppComponent = () =>{
                 </form>
             </div>
             <button onClick={getAllUsers}>GET ALL USERS</button>
+            <button onClick={logOut}>LOGOUT</button>
         </div>
     )
 }
